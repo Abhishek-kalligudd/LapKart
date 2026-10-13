@@ -1,6 +1,8 @@
 package com.lapkart.controller;
 
+import com.lapkart.entity.Category;
 import com.lapkart.entity.Product;
+import com.lapkart.repository.CategoryRepository;
 import com.lapkart.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +18,15 @@ import java.util.List;
 public class PublicController {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getProducts() {
         return ResponseEntity.ok(productRepository.findAll());
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getCategories() {
+        return ResponseEntity.ok(categoryRepository.findAll());
     }
 }

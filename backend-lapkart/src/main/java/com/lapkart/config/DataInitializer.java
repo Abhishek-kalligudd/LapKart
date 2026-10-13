@@ -11,8 +11,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         return args -> {
+            // Deduplicate product images that were multiplied by previous restarts
+            try {
+                int deleted = jdbcTemplate.update(
+                    "DELETE p1 FROM product_imgs p1 " +
+                    "INNER JOIN product_imgs p2 " +
+                    "WHERE p1.img_id > p2.img_id " +
+                    "  AND p1.product_id = p2.product_id " +
+                    "  AND p1.image_url = p2.image_url"
+                );
+                if (deleted > 0) {
+                    System.out.println("✅ Cleaned up " + deleted + " duplicate product images!");
+                }
+            } catch (Exception e) {
+                System.err.println("Note on image deduplication: " + e.getMessage());
+            }
+
             if (userRepository.findByEmail("admin@lapkart.com").isEmpty()) {
                 User admin = new User();
                 admin.setUsername("admin");

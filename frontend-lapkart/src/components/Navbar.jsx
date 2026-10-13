@@ -1,11 +1,14 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, LogOut, Laptop } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Navbar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   const handleLogout = () => {
     logout();
@@ -20,21 +23,27 @@ export default function Navbar() {
           <span className="font-bold text-xl tracking-tight text-primary">LapKart</span>
         </Link>
         
-        <div className="flex-1 max-w-xl px-4 hidden md:flex">
-          <input 
-            type="text" 
-            placeholder="Search laptops..." 
-            className="w-full h-10 px-4 rounded-full border bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+        {/* Only show search bar on browsing pages, never on login or register pages */}
+        {!isAuthPage && (
+          <div className="flex-1 max-w-xl px-4 hidden md:flex">
+            <input 
+              type="text" 
+              placeholder="Search laptops..." 
+              className="w-full h-10 px-4 rounded-full border bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+        )}
 
         <div className="flex items-center space-x-4">
-          <button className="relative p-2 hover:bg-accent rounded-full transition-colors">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="absolute top-0 right-0 h-4 w-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center">
-              0
-            </span>
-          </button>
+          {/* Only show shopping cart on browsing pages, never on login or register pages */}
+          {!isAuthPage && (
+            <button className="relative p-2 hover:bg-accent rounded-full transition-colors">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute top-0 right-0 h-4 w-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center">
+                0
+              </span>
+            </button>
+          )}
 
           {user ? (
             <div className="flex items-center space-x-4">
@@ -54,6 +63,13 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
+          ) : isAuthPage ? (
+            <Link 
+              to={location.pathname === '/login' ? '/register' : '/login'} 
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              {location.pathname === '/login' ? 'Create Account' : 'Sign In'}
+            </Link>
           ) : (
             <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
               Login

@@ -9,6 +9,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import { useAuthStore } from './store/authStore';
 
 import AdminProducts from './pages/admin/AdminProducts';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminUsers from './pages/admin/AdminUsers';
 
 // Protected Route Component for Admin
 const AdminRoute = ({ children }) => {
@@ -54,7 +56,8 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
-          {/* Add more admin routes here later */}
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
       </Routes>
     </Router>
