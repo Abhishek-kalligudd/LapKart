@@ -110,6 +110,20 @@ public class CartService {
         cartItemRepository.deleteByUserId(user.getId());
     }
 
+    @Transactional
+    public CartResponse mergeCart(String userEmail, List<AddToCartRequest> guestItems) {
+        if (guestItems != null) {
+            for (AddToCartRequest item : guestItems) {
+                try {
+                    addToCart(userEmail, item);
+                } catch (Exception ignored) {
+                    // Continue merging remaining valid items
+                }
+            }
+        }
+        return getCart(userEmail);
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));

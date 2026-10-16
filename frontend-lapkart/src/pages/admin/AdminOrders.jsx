@@ -26,6 +26,8 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
+  const [courierData, setCourierData] = useState({ courierName: '', trackingNumber: '' });
+
   const handleStatusChange = async (orderId, newOrderStatus, currentPaymentStatus) => {
     setUpdatingId(orderId);
     try {
@@ -34,8 +36,34 @@ export default function AdminOrders() {
         paymentStatus: currentPaymentStatus,
       });
       await fetchOrders();
+      if (newOrderStatus === 'Cancelled') {
+        alert('Order status marked as Cancelled. Stock has been automatically restocked to inventory.');
+      }
     } catch (err) {
       alert('Failed to update order status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleSaveCourierDetails = async (orderId) => {
+    setUpdatingId(orderId);
+    try {
+      await api.put(`/admin/orders/${orderId}/status`, {
+        courierName: courierData.courierName,
+        trackingNumber: courierData.trackingNumber,
+      });
+      await fetchOrders();
+      if (selectedOrder) {
+        setSelectedOrder(prev => ({
+          ...prev,
+          courierName: courierData.courierName,
+          trackingNumber: courierData.trackingNumber
+        }));
+      }
+      alert('Courier dispatch details updated successfully!');
+    } catch (err) {
+      alert('Failed to update courier details');
     } finally {
       setUpdatingId(null);
     }
@@ -175,7 +203,13 @@ export default function AdminOrders() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setCourierData({
+                            courierName: order.courierName || '',
+                            trackingNumber: order.trackingNumber || ''
+                          });
+                        }}
                         className="p-1.5 hover:bg-muted rounded-md text-primary font-medium inline-flex items-center gap-1 text-xs"
                         title="View details"
                       >
@@ -240,6 +274,46 @@ export default function AdminOrders() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Logistics & Courier Tracking Assignment */}
+            <div className="bg-muted/15 p-4 rounded-xl border space-y-3">
+              <h4 className="text-xs font-bold uppercase text-foreground flex items-center gap-2">
+                <span>Logistics & Courier Dispatch (AWB)</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    Courier / Logistics Partner
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. BlueDart / Delhivery / FedEx"
+                    value={courierData.courierName}
+                    onChange={(e) => setCourierData({ ...courierData, courierName: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    AWB Tracking Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. BLU-84920198"
+                    value={courierData.trackingNumber}
+                    onChange={(e) => setCourierData({ ...courierData, trackingNumber: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => handleSaveCourierDetails(selectedOrder.id)}
+                disabled={updatingId === selectedOrder.id}
+                className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50"
+              >
+                {updatingId === selectedOrder.id ? 'Updating...' : 'Save Courier & AWB Details'}
+              </button>
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t">

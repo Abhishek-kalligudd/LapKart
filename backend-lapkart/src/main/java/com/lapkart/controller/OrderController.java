@@ -63,4 +63,17 @@ public class OrderController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            OrderResponse order = orderService.cancelOrder(principal.getName(), id);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

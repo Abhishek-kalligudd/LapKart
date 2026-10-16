@@ -8,11 +8,13 @@ import {
   ShoppingCart,
   Eye,
   Check,
-  RotateCcw
+  RotateCcw,
+  Heart
 } from 'lucide-react';
 import { api } from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import { ProductGridSkeleton } from '../components/Skeleton';
 
 const brands = ['ALL', 'Apple', 'Dell', 'Asus', 'HP', 'Acer', 'Samsung', 'Gigabyte'];
@@ -30,13 +32,14 @@ export default function Products() {
   const [addedId, setAddedId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { user } = useAuthStore();
   const { addToCart } = useCartStore();
+  const { wishlistIds, toggleWishlist, fetchWishlist } = useWishlistStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+    fetchWishlist();
+  }, [fetchWishlist]);
 
   const fetchProducts = async () => {
     try {
@@ -51,14 +54,9 @@ export default function Products() {
   };
 
   const handleAddToCart = async (product) => {
-    if (!user) {
-      navigate('/login?redirect=/products');
-      return;
-    }
-
     setAddingId(product.id);
     setErrorMessage('');
-    const res = await addToCart(product.id, 1);
+    const res = await addToCart(product, 1);
     setAddingId(null);
 
     if (res.success) {
@@ -285,6 +283,18 @@ export default function Products() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => toggleWishlist(product)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          wishlistIds.has(product.id)
+                            ? 'text-red-500 bg-red-50 dark:bg-red-950/40'
+                            : 'text-muted-foreground hover:text-red-500 hover:bg-muted'
+                        }`}
+                        title={wishlistIds.has(product.id) ? 'Saved in Wishlist' : 'Add to Wishlist'}
+                      >
+                        <Heart className={`w-4 h-4 ${wishlistIds.has(product.id) ? 'fill-current' : ''}`} />
+                      </button>
+
                       <Link
                         to={`/product/${product.id}`}
                         className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

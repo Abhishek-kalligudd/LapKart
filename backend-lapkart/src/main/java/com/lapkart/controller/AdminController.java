@@ -28,6 +28,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final com.lapkart.service.OrderService orderService;
     private final com.lapkart.repository.OrderRepository orderRepository;
+    private final com.lapkart.service.ContactService contactService;
 
     // ==========================================
     // PRODUCTS MANAGEMENT
@@ -271,5 +272,20 @@ public class AdminController {
         stats.put("totalUsers", totalUsers);
         stats.put("totalOrders", totalOrders);
         return ResponseEntity.ok(stats);
+    }
+
+    // ==========================================
+    // CONTACT INQUIRIES
+    // ==========================================
+
+    @GetMapping("/contact-inquiries")
+    public ResponseEntity<List<com.lapkart.entity.ContactInquiry>> getContactInquiries() {
+        return ResponseEntity.ok(contactService.getAllInquiries());
+    }
+
+    @PutMapping("/contact-inquiries/{id}/read")
+    public ResponseEntity<?> markInquiryRead(@PathVariable Long id) {
+        contactService.markAsRead(id);
+        return ResponseEntity.ok(Map.of("message", "Marked as read"));
     }
 }

@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Shield
 } from 'lucide-react';
+import { api } from '../api/axios';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -23,13 +24,18 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      await api.post('/public/contact', formData);
       setSubmitted(true);
-    }, 800);
+      setFormData({ name: '', email: '', subject: 'general', message: '' });
+    } catch (err) {
+      alert(typeof err.response?.data === 'string' ? err.response.data : 'Failed to send inquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const faqs = [

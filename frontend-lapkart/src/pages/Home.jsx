@@ -5,13 +5,21 @@ import {
   ArrowRight,
   ShoppingCart,
   Eye,
-  Check
+  Check,
+  Heart,
+  Sparkles,
+  ShieldCheck,
+  Zap,
+  Truck,
+  Flame,
+  Award
 } from 'lucide-react';
 import { api } from '../api/axios';
-import LaptopHero3D from '../components/LaptopHero3D';
 import { ProductGridSkeleton } from '../components/Skeleton';
+import LookbackHero from '../components/LookbackHero';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -20,9 +28,8 @@ export default function Home() {
   const [addedId, setAddedId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { user } = useAuthStore();
   const { addToCart } = useCartStore();
-  const navigate = useNavigate();
+  const { wishlistIds, toggleWishlist, fetchWishlist } = useWishlistStore();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,17 +43,16 @@ export default function Home() {
       }
     };
     fetchProducts();
-  }, []);
+    fetchWishlist();
+  }, [fetchWishlist]);
 
-  const handleAddToCart = async (product) => {
-    if (!user) {
-      navigate('/login?redirect=/');
-      return;
-    }
-
+  const handleAddToCart = async (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setAddingId(product.id);
     setErrorMessage('');
-    const res = await addToCart(product.id, 1);
+
+    const res = await addToCart(product, 1);
     setAddingId(null);
 
     if (res.success) {
@@ -58,54 +64,44 @@ export default function Home() {
     }
   };
 
-  // Curate ONLY 4 flagship laptops for the bottom section
-  const curatedFlagships = products.slice(0, 4);
+  const handleToggleWishlist = async (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await toggleWishlist(product);
+  };
 
-  const tickerItems = [
-    'APPLE M5 PRO CHIPS',
-    'NVIDIA GEFORCE RTX 4090',
-    '240HZ DYNAMIC AMOLED',
-    'CRYO-VAPOR LIQUID COOLING',
-    'INTEL CORE ULTRA 9',
-    '45+ TOPS NEURAL NPU',
-    'AEROSPACE UNIBODY RIGIDITY',
-    'ZERO THERMAL THROTTLING',
-    '100% DCI-P3 COLOR ACCURACY',
-    'DIRECT BRAND WARRANTY',
-  ];
+  const curatedFlagships = products.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* ======================================================== */}
-      {/* 1. 3D INTERACTIVE ANIMATED LAPTOP SHOWCASE (HERO)        */}
+      {/* 1. LOOKBACK KINETIC SLIDING SHOWCASE (TOP 9 LAPTOPS)     */}
       {/* ======================================================== */}
-      <LaptopHero3D />
+      <LookbackHero
+        products={products}
+        loading={loading}
+        wishlistIds={wishlistIds}
+        onToggleWishlist={handleToggleWishlist}
+        onAddToCart={handleAddToCart}
+        addingId={addingId}
+        addedId={addedId}
+      />
 
       {/* ======================================================== */}
-      {/* 2. INFINITE KINETIC MARQUEE TICKER                       */}
+      {/* 3. CURATED FLAGSHIPS SECTION                             */}
       {/* ======================================================== */}
-      <div className="py-5 bg-foreground text-background border-y overflow-hidden whitespace-nowrap">
-        <div className="animate-marquee flex gap-8 items-center text-xs sm:text-sm font-black uppercase tracking-widest">
-          {tickerItems.concat(tickerItems).map((item, idx) => (
-            <span key={idx} className="flex items-center gap-8">
-              <span>{item}</span>
-              <span className="text-cyan-400">✦</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 3. CURATED FLAGSHIPS (SHOWN AT VERY BOTTOM AS REQUESTED) */}
-      {/* ======================================================== */}
-      <section className="py-24 container mx-auto px-4 max-w-7xl">
+      <section id="curated-flagships" className="py-24 container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
           <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase mb-2">
+              <Flame className="w-3.5 h-3.5 text-amber-500" />
+              Peak Hardware Benchmarks
+            </div>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
               Curated Flagships
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
-              A hand-picked selection of our top benchmark-scoring laptops.
+              A hand-picked selection of our top benchmark-scoring laptops ready for dispatch.
             </p>
           </div>
 
@@ -131,102 +127,114 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 mb-14">
-          {curatedFlagships.map((product) => (
-            <div
-              key={product.id}
-              className="bg-card rounded-3xl overflow-hidden shadow-sm border hover:shadow-2xl transition-all duration-300 group flex flex-col p-5"
-            >
-              <Link
-                to={`/product/${product.id}`}
-                className="aspect-[4/3] overflow-hidden bg-muted/40 rounded-2xl p-4 flex items-center justify-center relative cursor-pointer mb-4"
-              >
-                <img
-                  src={product.productImgs?.[0]?.imageUrl || 'https://via.placeholder.com/400x300?text=Laptop'}
-                  alt={product.name}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                />
-                {product.brand && (
-                  <span className="absolute top-3 left-3 text-[10px] font-black uppercase tracking-wider bg-background/80 backdrop-blur px-2.5 py-0.5 rounded-full border">
-                    {product.brand}
-                  </span>
-                )}
-                {product.discountPrice && product.discountPrice < product.price && (
-                  <span className="absolute top-3 right-3 text-[10px] font-extrabold bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
-                    Sale
-                  </span>
-                )}
-              </Link>
+            {curatedFlagships.map((product) => {
+              const isWishlisted = wishlistIds.has(product.id);
+              const isLowStock = product.stockQuantity != null && product.stockQuantity <= 5 && product.stockQuantity > 0;
+              const isOutOfStock = product.stockQuantity === 0;
 
-              <div className="flex-1 flex flex-col">
-                <Link to={`/product/${product.id}`} className="group-hover:text-primary transition-colors">
-                  <h3 className="font-extrabold text-base mb-1 line-clamp-1">{product.name}</h3>
-                </Link>
-                <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                  {product.processor ? `${product.processor} • ${product.ramGb ? product.ramGb + 'GB RAM' : ''}` : product.description}
-                </p>
+              return (
+                <div
+                  key={product.id}
+                  className="bg-card rounded-3xl overflow-hidden shadow-sm border hover:shadow-2xl transition-all duration-300 group flex flex-col p-5 relative"
+                >
+                  {/* Wishlist Heart Button */}
+                  <button
+                    onClick={(e) => handleToggleWishlist(product, e)}
+                    title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                    className={`absolute top-8 right-8 z-10 w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
+                      isWishlisted
+                        ? 'bg-red-500 text-white border-red-500 shadow-md scale-105'
+                        : 'bg-card/80 backdrop-blur-sm text-muted-foreground hover:text-red-500 hover:border-red-300'
+                    }`}
+                  >
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                  </button>
 
-                <div className="mt-auto pt-3 border-t flex items-center justify-between">
-                  <div className="flex flex-col">
-                    {product.discountPrice && product.discountPrice < product.price ? (
-                      <>
-                        <span className="text-lg font-black text-primary">₹{product.discountPrice}</span>
-                        <span className="text-[11px] text-muted-foreground line-through">₹{product.price}</span>
-                      </>
-                    ) : (
-                      <span className="text-lg font-black">₹{product.price}</span>
+                  <Link
+                    to={`/product/${product.id}`}
+                    className="aspect-[4/3] overflow-hidden bg-muted/40 rounded-2xl p-4 flex items-center justify-center relative cursor-pointer mb-4"
+                  >
+                    <img
+                      src={product.productImgs?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=400'}
+                      alt={product.name}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {isLowStock && (
+                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-amber-500/90 text-white text-[10px] font-bold">
+                        Only {product.stockQuantity} Left!
+                      </span>
                     )}
-                  </div>
+                  </Link>
 
-                  <div className="flex items-center gap-1.5">
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      disabled={addingId === product.id}
-                      className={`flex items-center space-x-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        addedId === product.id
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }`}
-                    >
-                      {addedId === product.id ? (
-                        <>
-                          <Check className="h-3.5 w-3.5" />
-                          <span>Added</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingCart className="h-3.5 w-3.5" />
-                          <span>Cart</span>
-                        </>
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[11px] font-extrabold uppercase text-primary tracking-wider">
+                        {product.brand}
+                      </span>
+                      {product.discountPrice && (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                          Save ₹{product.price - product.discountPrice}
+                        </span>
                       )}
-                    </button>
+                    </div>
+
+                    <Link to={`/product/${product.id}`}>
+                      <h3 className="font-extrabold text-base line-clamp-1 group-hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                    </Link>
+
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 mb-4 flex-1">
+                      {product.description || `${product.processor} • ${product.ramGb}GB RAM • ${product.storage}`}
+                    </p>
+
+                    <div className="pt-3 border-t flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-black text-foreground">
+                          ₹{product.discountPrice || product.price}
+                        </div>
+                        {product.discountPrice && (
+                          <div className="text-xs text-muted-foreground line-through">
+                            ₹{product.price}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => handleAddToCart(product, e)}
+                        disabled={addingId === product.id || isOutOfStock}
+                        className={`p-3 rounded-2xl flex items-center justify-center transition-all ${
+                          addedId === product.id
+                            ? 'bg-emerald-500 text-white scale-105'
+                            : isOutOfStock
+                            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                            : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95 shadow-md shadow-primary/20'
+                        }`}
+                        title={isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                      >
+                        {addedId === product.id ? (
+                          <Check className="w-5 h-5" />
+                        ) : addingId === product.id ? (
+                          <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <ShoppingCart className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
         )}
 
-        {/* Big CTA Banner to View All Machines */}
-        <div className="bg-gradient-to-r from-card via-muted/40 to-card border rounded-3xl p-8 sm:p-12 text-center max-w-4xl mx-auto shadow-sm">
-          <h3 className="text-2xl sm:text-3xl font-black mb-3">
-            Looking for a Specific Model or Budget?
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
-            Filter our entire warehouse catalog by processor generation, graphics capability, RAM, and official category ratings.
-          </p>
+        {/* View All Button */}
+        <div className="text-center">
           <Link
             to="/products"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-black text-sm shadow-xl hover:scale-105 transition-all hover:bg-primary/90"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-secondary text-secondary-foreground font-bold hover:bg-secondary/80 transition-all text-sm shadow-sm"
           >
-            <span>Explore All 27+ Laptops in Catalog</span>
+            <span>Explore Entire 25+ Laptop Inventory</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

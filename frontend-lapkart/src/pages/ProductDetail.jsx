@@ -22,13 +22,16 @@ import {
 import { api } from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import { ProductDetailSkeleton } from '../components/Skeleton';
+import { Heart, MessageSquare } from 'lucide-react';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { addToCart } = useCartStore();
+  const { wishlistIds, toggleWishlist, fetchWishlist } = useWishlistStore();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -38,6 +41,14 @@ export default function ProductDetail() {
   const [addingToCart, setAddingToCart] = useState(false);
   const [added, setAdded] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState({ averageRating: 0, reviewCount: 0 });
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewToast, setReviewToast] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -67,6 +78,9 @@ export default function ProductDetail() {
           .slice(0, 4);
         setRelatedProducts(related);
       }
+      // Fetch reviews & summary
+      fetchReviews();
+      fetchWishlist();
     } catch (err) {
       console.error('Failed to load product', err);
     } finally {
@@ -74,21 +88,61 @@ export default function ProductDetail() {
     }
   };
 
-  const handleAddToCart = async (redirectCheckout = false) => {
+  const fetchReviews = async () => {
+    try {
+      const [reviewsRes, summaryRes] = await Promise.all([
+        api.get(`/public/reviews/product/${id}`),
+        api.get(`/public/reviews/product/${id}/summary`),
+      ]);
+      setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : []);
+      if (summaryRes.data) {
+        setReviewSummary(summaryRes.data);
+      }
+    } catch (e) {
+      // Ignore
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
     if (!user) {
       navigate(`/login?redirect=/product/${id}`);
       return;
     }
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', {
+        productId: Number(id),
+        rating: newRating,
+        comment: newComment,
+      });
+      setNewComment('');
+      setReviewToast({ type: 'success', message: 'Review submitted successfully!' });
+      fetchReviews();
+      setTimeout(() => setReviewToast(null), 3500);
+    } catch (err) {
+      const msg = typeof err.response?.data === 'string' ? err.response.data : 'Failed to submit review';
+      setReviewToast({ type: 'error', message: msg });
+      setTimeout(() => setReviewToast(null), 3500);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
+  const handleAddToCart = async (redirectCheckout = false) => {
     setAddingToCart(true);
     setErrorMessage('');
-    const res = await addToCart(product.id, quantity);
+    const res = await addToCart(product, quantity);
     setAddingToCart(false);
 
     if (res.success) {
       setAdded(true);
       if (redirectCheckout) {
-        navigate('/checkout');
+        if (!user) {
+          navigate('/login?redirect=/checkout');
+        } else {
+          navigate('/checkout');
+        }
       } else {
         setTimeout(() => setAdded(false), 2500);
       }
@@ -340,11 +394,11 @@ export default function ProductDetail() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div className="flex items-center gap-3 pt-2">
                   <button
                     onClick={() => handleAddToCart(false)}
                     disabled={addingToCart}
-                    className={`py-3.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all ${
+                    className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all ${
                       added
                         ? 'bg-emerald-600 text-white'
                         : 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20'
@@ -368,10 +422,22 @@ export default function ProductDetail() {
                   <button
                     onClick={() => handleAddToCart(true)}
                     disabled={addingToCart}
-                    className="py-3.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 py-3.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
                   >
                     <Zap className="w-4 h-4" />
                     <span>Buy Now</span>
+                  </button>
+
+                  <button
+                    onClick={() => toggleWishlist(product)}
+                    className={`p-3.5 rounded-xl border flex items-center justify-center transition-all ${
+                      wishlistIds.has(product.id)
+                        ? 'bg-red-500 text-white border-red-500 shadow-md'
+                        : 'border hover:bg-muted text-muted-foreground hover:text-red-500'
+                    }`}
+                    title={wishlistIds.has(product.id) ? 'Saved in Wishlist' : 'Save to Wishlist'}
+                  >
+                    <Heart className={`w-5 h-5 ${wishlistIds.has(product.id) ? 'fill-current' : ''}`} />
                   </button>
                 </div>
               </div>
@@ -401,6 +467,186 @@ export default function ProductDetail() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* Customer Reviews & Verified Ratings Section              */}
+        {/* ======================================================== */}
+        <div className="mt-20 pt-10 border-t">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase mb-2">
+                <Star className="w-3.5 h-3.5 fill-current" />
+                Community Telemetry & Feedback
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Verified Customer Reviews</h2>
+              <p className="text-sm text-muted-foreground mt-1">Real benchmarks and feedback from verified purchasers</p>
+            </div>
+
+            {/* Average Rating Banner */}
+            <div className="flex items-center gap-4 bg-card border rounded-2xl p-4 shadow-sm">
+              <div className="text-center">
+                <span className="text-3xl font-black text-foreground block">
+                  {reviewSummary.averageRating > 0 ? reviewSummary.averageRating.toFixed(1) : '5.0'}
+                </span>
+                <div className="flex text-amber-500 justify-center mt-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        i < Math.round(reviewSummary.averageRating || 5)
+                          ? 'fill-current'
+                          : 'text-muted/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground border-l pl-4">
+                <span className="font-bold text-foreground block">
+                  {reviewSummary.reviewCount || reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+                </span>
+                <span>100% Verified Buyer Rating</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Toast Notification */}
+          {reviewToast && (
+            <div
+              className={`mb-6 p-4 rounded-xl border text-sm font-semibold flex items-center gap-2 ${
+                reviewToast.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200'
+                  : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-200'
+              }`}
+            >
+              <Check className="w-4 h-4 flex-shrink-0" />
+              <span>{reviewToast.message}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
+            {/* Left: Review Submission Form */}
+            <div className="lg:col-span-5 bg-card border rounded-3xl p-6 shadow-sm space-y-4">
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                <span>Write a Product Review</span>
+              </h3>
+
+              {!user ? (
+                <div className="p-4 rounded-2xl bg-muted/40 border text-center space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Sign in to your LapKart account to submit a verified rating and hardware feedback.
+                  </p>
+                  <Link
+                    to={`/login?redirect=/product/${id}`}
+                    className="inline-block px-5 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl hover:bg-primary/90 transition-all shadow-sm"
+                  >
+                    Sign In to Review
+                  </Link>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitReview} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-muted-foreground">
+                      Overall Rating *
+                    </label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewRating(star)}
+                          className="p-1 hover:scale-110 transition-transform"
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              star <= newRating
+                                ? 'text-amber-500 fill-current'
+                                : 'text-muted-foreground/30'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-muted-foreground">
+                      Review / Benchmark Feedback *
+                    </label>
+                    <textarea
+                      required
+                      rows="3"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Share your thoughts on thermals, display quality, build rigidity, or battery life..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50"
+                  >
+                    {submittingReview ? 'Posting Review...' : 'Submit Verified Review'}
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {/* Right: Reviews List */}
+            <div className="lg:col-span-7 space-y-4">
+              {reviews.length === 0 ? (
+                <div className="p-8 rounded-3xl border bg-card/60 text-center space-y-2">
+                  <Star className="w-8 h-8 mx-auto text-muted-foreground/40" />
+                  <h4 className="font-bold text-sm">No Reviews Yet</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Be the first to review this laptop and share your real-world performance benchmarks with the community!
+                  </p>
+                </div>
+              ) : (
+                reviews.map((rev) => (
+                  <div key={rev.id} className="p-5 rounded-2xl border bg-card shadow-sm space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-foreground">{rev.username}</span>
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Verified Purchase
+                          </span>
+                        </div>
+                        <div className="flex text-amber-500 gap-0.5 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < rev.rating ? 'fill-current' : 'text-muted/40'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">
+                        {rev.createdAt
+                          ? new Date(rev.createdAt).toLocaleDateString('en-IN', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : 'Recent'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed pt-1">
+                      {rev.comment}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

@@ -34,6 +34,18 @@ public class Order {
     @Column(name = "shipping_address", nullable = false)
     private String shippingAddress;
 
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
+    @Column(name = "courier_name")
+    private String courierName;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private Date createdAt;
 

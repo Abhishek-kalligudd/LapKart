@@ -21,6 +21,8 @@ import Products from './pages/Products';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Feedback from './pages/Feedback';
+import Profile from './pages/Profile';
+import Wishlist from './pages/Wishlist';
 
 // Protected Route Component for Admin
 const AdminRoute = ({ children }) => {
@@ -33,7 +35,7 @@ const AdminRoute = ({ children }) => {
 
 // Layout for public pages
 const PublicLayout = ({ children }) => (
-  <div className="flex flex-col min-h-screen">
+  <div className="flex flex-col min-h-screen bg-background text-foreground">
     <Navbar />
     <main className="flex-grow">
       {children}
@@ -61,6 +63,8 @@ function App() {
         <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
         <Route path="/order-success/:orderNumber" element={<PublicLayout><OrderSuccess /></PublicLayout>} />
         <Route path="/orders" element={<PublicLayout><Orders /></PublicLayout>} />
+        <Route path="/profile" element={<PublicLayout><Profile /></PublicLayout>} />
+        <Route path="/wishlist" element={<PublicLayout><Wishlist /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
         

@@ -60,7 +60,7 @@ export default function About() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-6">
-              <Sparkles className="w-3.5 h-3.5" />
+              {/* <Sparkles className="w-3.5 h-3.5" /> */}
               The LapKart Manifesto
             </div>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-foreground leading-tight">

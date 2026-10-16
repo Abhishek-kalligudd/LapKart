@@ -132,15 +132,68 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
 
-        if (req.getOrderStatus() != null && !req.getOrderStatus().isBlank()) {
-            order.setOrderStatus(req.getOrderStatus());
+        String oldStatus = order.getOrderStatus();
+        String newStatus = req.getOrderStatus();
+
+        if (newStatus != null && !newStatus.isBlank()) {
+            // If changing to Cancelled from another status, restock inventory
+            if ("Cancelled".equalsIgnoreCase(newStatus) && !"Cancelled".equalsIgnoreCase(oldStatus)) {
+                if (order.getOrderItems() != null) {
+                    for (OrderItem item : order.getOrderItems()) {
+                        Product product = item.getProduct();
+                        int currentStock = (product.getStockQuantity() != null) ? product.getStockQuantity() : 0;
+                        product.setStockQuantity(currentStock + item.getQuantity());
+                        productRepository.save(product);
+                    }
+                }
+                if (order.getPaymentStatus() != null && "Paid".equalsIgnoreCase(order.getPaymentStatus())) {
+                    order.setPaymentStatus("Refunded");
+                }
+            }
+            order.setOrderStatus(newStatus);
         }
+
         if (req.getPaymentStatus() != null && !req.getPaymentStatus().isBlank()) {
             order.setPaymentStatus(req.getPaymentStatus());
         }
 
+        if (req.getCourierName() != null) {
+            order.setCourierName(req.getCourierName().trim());
+        }
+
+        if (req.getTrackingNumber() != null) {
+            order.setTrackingNumber(req.getTrackingNumber().trim());
+        }
+
         Order updated = orderRepository.save(order);
         return mapToOrderResponse(updated);
+    }
+
+    @Transactional
+    public OrderResponse cancelOrder(String userEmail, Long orderId) {
+        User user = getUserByEmail(userEmail);
+        Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        String status = order.getOrderStatus();
+        if (!"Pending".equalsIgnoreCase(status) && !"Processing".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Order cannot be cancelled. Current status: " + status);
+        }
+
+        // Restock inventory for each item
+        if (order.getOrderItems() != null) {
+            for (com.lapkart.entity.OrderItem item : order.getOrderItems()) {
+                com.lapkart.entity.Product product = item.getProduct();
+                int currentStock = (product.getStockQuantity() != null) ? product.getStockQuantity() : 0;
+                product.setStockQuantity(currentStock + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        order.setOrderStatus("Cancelled");
+        order.setPaymentStatus("Refunded");
+        Order saved = orderRepository.save(order);
+        return mapToOrderResponse(saved);
     }
 
     private User getUserByEmail(String email) {
@@ -185,6 +238,10 @@ public class OrderService {
                 .orderStatus(order.getOrderStatus())
                 .paymentStatus(order.getPaymentStatus())
                 .shippingAddress(order.getShippingAddress())
+                .razorpayOrderId(order.getRazorpayOrderId())
+                .razorpayPaymentId(order.getRazorpayPaymentId())
+                .courierName(order.getCourierName())
+                .trackingNumber(order.getTrackingNumber())
                 .createdAt(order.getCreatedAt())
                 .items(itemDtos)
                 .userId(order.getUser() != null ? order.getUser().getId() : null)

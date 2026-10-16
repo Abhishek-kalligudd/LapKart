@@ -20,6 +20,10 @@ public class OrderResponse {
     private String orderStatus;
     private String paymentStatus;
     private String shippingAddress;
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+    private String courierName;
+    private String trackingNumber;
     private Date createdAt;
     private List<OrderItemDto> items;
     private Long userId;

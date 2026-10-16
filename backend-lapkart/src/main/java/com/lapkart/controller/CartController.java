@@ -72,4 +72,12 @@ public class CartController {
         cartService.clearCart(principal.getName());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/merge")
+    public ResponseEntity<?> mergeCart(@RequestBody java.util.List<AddToCartRequest> items, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(cartService.mergeCart(principal.getName(), items));
+    }
 }
