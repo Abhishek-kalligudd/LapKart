@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Users, Tags, TrendingUp, Plus, ArrowRight } from 'lucide-react';
+import { Package, Users, Tags, TrendingUp, Plus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/axios';
 
@@ -8,6 +8,7 @@ export default function AdminDashboard() {
     totalProducts: 0,
     totalCategories: 0,
     totalUsers: 0,
+    totalOrders: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +31,15 @@ export default function AdminDashboard() {
   };
 
   const statCards = [
+    {
+      label: 'Customer Orders',
+      value: stats.totalOrders || 0,
+      icon: ShoppingBag,
+      link: '/admin/orders',
+      linkText: 'Manage Orders',
+      description: 'Placed customer orders',
+      color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/40',
+    },
     {
       label: 'Total Laptop Models',
       value: stats.totalProducts,

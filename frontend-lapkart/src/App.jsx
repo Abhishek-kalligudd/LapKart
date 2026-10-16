@@ -11,6 +11,16 @@ import { useAuthStore } from './store/authStore';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminOrders from './pages/admin/AdminOrders';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
+import Orders from './pages/Orders';
+import ProductDetail from './pages/ProductDetail';
+import Products from './pages/Products';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Feedback from './pages/Feedback';
 
 // Protected Route Component for Admin
 const AdminRoute = ({ children }) => {
@@ -40,8 +50,17 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* Public & Customer Routes */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/products" element={<PublicLayout><Products /></PublicLayout>} />
+        <Route path="/product/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
+        <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
+        <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
+        <Route path="/order-success/:orderNumber" element={<PublicLayout><OrderSuccess /></PublicLayout>} />
+        <Route path="/orders" element={<PublicLayout><Orders /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
         
@@ -55,6 +74,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="orders" element={<AdminOrders />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="users" element={<AdminUsers />} />

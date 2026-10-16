@@ -26,6 +26,8 @@ public class AdminController {
     private final CategoryRepository categoryRepository;
     private final ProductImgRepository productImgRepository;
     private final UserRepository userRepository;
+    private final com.lapkart.service.OrderService orderService;
+    private final com.lapkart.repository.OrderRepository orderRepository;
 
     // ==========================================
     // PRODUCTS MANAGEMENT
@@ -233,6 +235,26 @@ public class AdminController {
     }
 
     // ==========================================
+    // ORDERS MANAGEMENT
+    // ==========================================
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<com.lapkart.dto.OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrdersForAdmin());
+    }
+
+    @PutMapping("/orders/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestBody com.lapkart.dto.UpdateOrderStatusRequest req) {
+        try {
+            return ResponseEntity.ok(orderService.updateOrderStatus(id, req));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ==========================================
     // ADMIN DASHBOARD STATS
     // ==========================================
 
@@ -241,11 +263,13 @@ public class AdminController {
         long totalProducts = productRepository.count();
         long totalCategories = categoryRepository.count();
         long totalUsers = userRepository.count();
+        long totalOrders = orderRepository.count();
         
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalProducts", totalProducts);
         stats.put("totalCategories", totalCategories);
         stats.put("totalUsers", totalUsers);
+        stats.put("totalOrders", totalOrders);
         return ResponseEntity.ok(stats);
     }
 }

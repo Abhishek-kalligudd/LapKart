@@ -25,6 +25,13 @@ public class PublicController {
         return ResponseEntity.ok(productRepository.findAll());
     }
 
+    @GetMapping("/products/{id}")
+    public ResponseEntity<Product> getProductById(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        return productRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/categories")
     public ResponseEntity<List<Category>> getCategories() {
         return ResponseEntity.ok(categoryRepository.findAll());
