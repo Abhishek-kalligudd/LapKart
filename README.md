@@ -29,19 +29,19 @@ LapKart is built on a decoupled, cloud-native client-server architecture:
 
 ```mermaid
 flowchart TD
-    Client["Browser / Client (React 19 + Three.js)"]
-    Vercel["Vercel Edge Network (SPA Routing)"]
-    Render["Render Web Service (Docker / Eclipse Temurin 17)"]
-    SpringSec["Spring Security 6 (Stateless JWT + RBAC)"]
-    AivenDB[("Aiven Cloud (MySQL 8.0)")]
+    Client["Browser Client: React 19 + Three.js"]
+    Vercel["Vercel Edge Network: SPA Routing"]
+    Render["Render Web Service: Docker + Java 17"]
+    SpringSec["Spring Security 6: Stateless JWT + RBAC"]
+    AivenDB[("Aiven Cloud MySQL 8.0")]
     Razorpay["Razorpay Payment Gateway"]
-    ImageKit["ImageKit CDN (Product Assets)"]
+    ImageKit["ImageKit CDN: Product Assets"]
 
-    Client -->|HTTPS / Assets| Vercel
-    Client -->|REST API Calls (Bearer Token / Cookie)| Render
+    Client -->|HTTPS and Static Assets| Vercel
+    Client -->|REST API Calls: Bearer Token and Cookie| Render
     Render --> SpringSec
-    SpringSec -->|JPA / Hibernate| AivenDB
-    Render -->|Order Payment Creation & Verification| Razorpay
+    SpringSec -->|JPA and Hibernate| AivenDB
+    Render -->|Order Creation and Verification| Razorpay
     Client -->|Ultra-HD Laptop Renderings| ImageKit
 ```
 
