@@ -38,7 +38,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/public/**", "/error").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
@@ -80,7 +80,12 @@ public class SecurityConfig {
 
         String customFrontend = System.getenv("FRONTEND_URL");
         if (customFrontend != null && !customFrontend.isBlank()) {
-            allowedOriginPatterns.add(customFrontend.trim());
+            String trimmed = customFrontend.trim();
+            allowedOriginPatterns.add(trimmed);
+            if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+                allowedOriginPatterns.add("https://" + trimmed);
+                allowedOriginPatterns.add("http://" + trimmed);
+            }
         }
 
         configuration.setAllowedOriginPatterns(allowedOriginPatterns);

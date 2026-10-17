@@ -52,10 +52,13 @@ export default function Login() {
         navigate('/');
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        'Login failed. Please verify your email and password.'
-      );
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Unable to connect to the backend server. Render may be waking up from cold sleep (takes ~45s), please wait a moment and try again.');
+      } else {
+        setError('Login failed. Please verify your email and password.');
+      }
     } finally {
       setLoading(false);
     }
