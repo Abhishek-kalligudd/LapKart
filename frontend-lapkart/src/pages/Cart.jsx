@@ -21,6 +21,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { CartSkeleton } from '../components/Skeleton';
 import { api } from '../api/axios';
+import { formatCurrency } from '../lib/utils';
 
 export default function Cart() {
   const {
@@ -187,11 +188,11 @@ export default function Cart() {
 
                   <div className="mt-2 flex items-center justify-center sm:justify-start gap-2">
                     <span className="font-extrabold text-base text-foreground">
-                      ₹{item.effectivePrice || item.price}
+                      {formatCurrency(item.effectivePrice || item.price)}
                     </span>
                     {item.discountPrice && (
                       <span className="text-xs text-muted-foreground line-through">
-                        ₹{item.price}
+                        {formatCurrency(item.price)}
                       </span>
                     )}
                   </div>
@@ -232,7 +233,7 @@ export default function Cart() {
                 <div className="text-right min-w-[5.5rem] hidden sm:block">
                   <span className="text-xs text-muted-foreground block">Item Total</span>
                   <span className="font-extrabold text-base text-foreground">
-                    ₹{item.subtotal || ((item.effectivePrice || item.price) * item.quantity)}
+                    {formatCurrency(item.subtotal || ((item.effectivePrice || item.price) * item.quantity))}
                   </span>
                 </div>
               </motion.div>
@@ -255,7 +256,7 @@ export default function Cart() {
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                     Add +2 Year LapCare Comprehensive Warranty
                   </span>
-                  <span className="font-extrabold text-sm text-primary">+₹{warrantyCost}</span>
+                  <span className="font-extrabold text-sm text-primary">+{formatCurrency(warrantyCost)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Includes 100% coverage for accidental drops, liquid spills, battery replacements, and doorstep engineer pickups.
@@ -282,7 +283,7 @@ export default function Cart() {
                     <span>{appliedCoupon.code} Applied</span>
                   </div>
                   <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block mt-0.5">
-                    Saved ₹{appliedCoupon.discountAmount} ({appliedCoupon.discountPercent}%)
+                    Saved {formatCurrency(appliedCoupon.discountAmount)} ({appliedCoupon.discountPercent}%)
                   </span>
                 </div>
                 <button
@@ -346,20 +347,20 @@ export default function Cart() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal ({totalItems} items)</span>
-                <span className="font-semibold">₹{totalAmount}</span>
+                <span className="font-semibold">{formatCurrency(totalAmount)}</span>
               </div>
 
               {hasWarranty && (
                 <div className="flex justify-between text-emerald-600">
                   <span>+2 Year LapCare Protection</span>
-                  <span className="font-semibold">+₹{warrantyCost}</span>
+                  <span className="font-semibold">+{formatCurrency(warrantyCost)}</span>
                 </div>
               )}
 
               {appliedCoupon && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
                   <span>Discount ({appliedCoupon.code})</span>
-                  <span>-₹{appliedCoupon.discountAmount}</span>
+                  <span>-{formatCurrency(appliedCoupon.discountAmount)}</span>
                 </div>
               )}
 
@@ -378,7 +379,7 @@ export default function Cart() {
                   <span className="font-extrabold text-base">Total Payable</span>
                   <span className="text-[11px] text-muted-foreground block">Inclusive of all taxes</span>
                 </div>
-                <span className="text-2xl font-black text-primary">₹{finalPayable}</span>
+                <span className="text-2xl font-black text-primary">{formatCurrency(finalPayable)}</span>
               </div>
             </div>
 

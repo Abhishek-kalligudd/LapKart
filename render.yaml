@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: lapkart-backend
+    runtime: docker
+    rootDir: backend-lapkart
+    dockerfilePath: Dockerfile
+    plan: free
+    envVars:
+      - key: DB_PASSWORD
+        sync: false
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://lapkart-abhuk-16.f.aivencloud.com:23046/defaultdb?sslMode=REQUIRED
+      - key: SPRING_DATASOURCE_USERNAME
+        value: avnadmin
+      - key: JWT_SECRET
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

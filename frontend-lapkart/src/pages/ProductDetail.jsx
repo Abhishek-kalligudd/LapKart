@@ -25,6 +25,7 @@ import { useAuthStore } from '../store/authStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { ProductDetailSkeleton } from '../components/Skeleton';
 import { Heart, MessageSquare } from 'lucide-react';
+import { formatCurrency } from '../lib/utils';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -174,7 +175,7 @@ export default function ProductDetail() {
 
   const effectivePrice = product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price;
   const hasDiscount = product.discountPrice && product.discountPrice < product.price;
-  const savings = hasDiscount ? product.price - product.discountPrice : 0;
+  const savings = hasDiscount ? Math.round(product.price - product.discountPrice) : 0;
   const stock = product.stockQuantity != null ? product.stockQuantity : 10;
   const isOutOfStock = stock <= 0;
 
@@ -229,7 +230,7 @@ export default function ProductDetail() {
 
               {hasDiscount && (
                 <div className="absolute top-5 left-5 bg-primary text-primary-foreground text-xs font-extrabold px-3 py-1.5 rounded-full shadow-md">
-                  SAVE ₹{savings}
+                  SAVE {formatCurrency(savings)}
                 </div>
               )}
 
@@ -310,11 +311,11 @@ export default function ProductDetail() {
             <div className="p-5 rounded-2xl bg-muted/30 border space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl sm:text-4xl font-extrabold text-foreground">
-                  ₹{effectivePrice}
+                  {formatCurrency(effectivePrice)}
                 </span>
                 {hasDiscount && (
                   <span className="text-lg text-muted-foreground line-through font-medium">
-                    ₹{product.price}
+                    {formatCurrency(product.price)}
                   </span>
                 )}
                 {hasDiscount && (
@@ -682,7 +683,7 @@ export default function ProductDetail() {
                   <p className="text-xs text-muted-foreground line-clamp-1 mb-3">{rel.processor}</p>
                   <div className="mt-auto pt-2 border-t flex justify-between items-center">
                     <span className="font-extrabold text-sm">
-                      ₹{rel.discountPrice || rel.price}
+                      {formatCurrency(rel.discountPrice || rel.price)}
                     </span>
                     <span className="text-xs text-primary font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center gap-0.5">
                       Details →

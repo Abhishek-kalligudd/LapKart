@@ -20,6 +20,7 @@ import {
 import { api } from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { OrdersSkeleton } from '../components/Skeleton';
+import { formatCurrency } from '../lib/utils';
 
 export default function Orders() {
   const { user } = useAuthStore();
@@ -175,7 +176,7 @@ export default function Orders() {
                   </span>
                   <div className="text-right">
                     <span className="text-xs text-muted-foreground block">Total Amount</span>
-                    <span className="font-extrabold text-lg text-primary">₹{order.totalAmount}</span>
+                    <span className="font-extrabold text-lg text-primary">{formatCurrency(order.totalAmount)}</span>
                   </div>
 
                   {/* Invoice Button */}
@@ -254,9 +255,9 @@ export default function Orders() {
                     <div className="flex-1 min-w-0">
                       <span className="text-[11px] font-bold text-primary uppercase">{item.brand}</span>
                       <h4 className="font-semibold text-sm truncate">{item.name}</h4>
-                      <p className="text-xs text-muted-foreground">Qty: {item.quantity} × ₹{item.priceLocked}</p>
+                      <p className="text-xs text-muted-foreground">Qty: {item.quantity} × {formatCurrency(item.priceLocked)}</p>
                     </div>
-                    <span className="font-bold text-sm">₹{item.subtotal}</span>
+                    <span className="font-bold text-sm">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -371,7 +372,7 @@ export default function Orders() {
                           <td className="p-3 text-center font-bold">{item.quantity}</td>
                           <td className="p-3 text-right font-mono">₹{netPrice.toFixed(2)}</td>
                           <td className="p-3 text-right font-mono">₹{(gstPerItem * item.quantity).toFixed(2)}</td>
-                          <td className="p-3 text-right font-bold font-mono">₹{item.subtotal}</td>
+                          <td className="p-3 text-right font-bold font-mono">{formatCurrency(item.subtotal)}</td>
                         </tr>
                       );
                     })}
@@ -396,7 +397,7 @@ export default function Orders() {
                   </div>
                   <div className="flex justify-between pt-2 border-t font-black text-base text-primary">
                     <span>Grand Total:</span>
-                    <span className="font-mono">₹{invoiceOrder.totalAmount}</span>
+                    <span className="font-mono">{formatCurrency(invoiceOrder.totalAmount)}</span>
                   </div>
                 </div>
               </div>

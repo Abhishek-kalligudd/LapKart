@@ -5,6 +5,7 @@ import {
   ExternalLink, Laptop, DollarSign, Layers, Cpu, HardDrive, 
   Monitor, Star, AlertCircle, RefreshCw
 } from 'lucide-react';
+import { formatCurrency } from '../../lib/utils';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -129,8 +130,8 @@ export default function AdminProducts() {
         name: productForm.name,
         sku: productForm.sku,
         categoryId: productForm.categoryId ? Number(productForm.categoryId) : null,
-        price: Number(productForm.price),
-        discountPrice: productForm.discountPrice ? Number(productForm.discountPrice) : null,
+        price: Math.round(Number(productForm.price)),
+        discountPrice: productForm.discountPrice ? Math.round(Number(productForm.discountPrice)) : null,
         stockQuantity: Number(productForm.stockQuantity || 0),
         processor: productForm.processor,
         ramGb: productForm.ramGb ? Number(productForm.ramGb) : null,
@@ -445,11 +446,11 @@ export default function AdminProducts() {
                       {/* Price */}
                       <td className="px-6 py-4">
                         <div className="font-semibold text-foreground">
-                          ${p.discountPrice ? p.discountPrice : p.price}
+                          {formatCurrency(p.discountPrice ? p.discountPrice : p.price)}
                         </div>
                         {p.discountPrice && (
                           <div className="text-xs text-muted-foreground line-through">
-                            ${p.price}
+                            {formatCurrency(p.price)}
                           </div>
                         )}
                       </td>
@@ -632,13 +633,13 @@ export default function AdminProducts() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">
-                      Regular Price ($) <span className="text-destructive">*</span>
+                      Regular Price (₹) <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="number"
-                      step="0.01"
+                      step="1"
                       required
-                      placeholder="999.99"
+                      placeholder="89999"
                       value={productForm.price}
                       onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                       className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -647,12 +648,12 @@ export default function AdminProducts() {
 
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">
-                      Sale / Discount Price ($)
+                      Sale / Discount Price (₹)
                     </label>
                     <input
                       type="number"
-                      step="0.01"
-                      placeholder="899.99 (optional)"
+                      step="1"
+                      placeholder="79999 (optional)"
                       value={productForm.discountPrice}
                       onChange={(e) => setProductForm({ ...productForm, discountPrice: e.target.value })}
                       className="w-full px-3 py-2 bg-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"

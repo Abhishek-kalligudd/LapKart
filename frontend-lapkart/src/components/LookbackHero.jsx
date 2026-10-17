@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   MoveHorizontal
 } from 'lucide-react';
+import { formatCurrency } from '../lib/utils';
 
 export default function LookbackHero({
   products = [],
@@ -230,7 +231,7 @@ export default function LookbackHero({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onWheel={onWheel}
-        className={`flex gap-6 overflow-x-auto scrollbar-none px-4 sm:px-8 md:px-12 pb-4 ${
+        className={`flex gap-6 overflow-x-auto hero-scrollbar px-4 sm:px-8 md:px-12 pb-5 ${
           isPointerActive ? 'cursor-grabbing select-none' : 'cursor-grab'
         } overscroll-x-contain touch-pan-x`}
         style={{
@@ -322,11 +323,11 @@ export default function LookbackHero({
                   <div className="z-10 flex items-end justify-between">
                     <div>
                       <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-                        ₹{(product.discountPrice || product.price).toLocaleString('en-IN')}
+                        {formatCurrency(product.discountPrice || product.price)}
                       </div>
                       {product.discountPrice && (
                         <div className="text-xs text-muted-foreground line-through font-mono">
-                          ₹{product.price.toLocaleString('en-IN')}
+                          {formatCurrency(product.price)}
                         </div>
                       )}
                     </div>

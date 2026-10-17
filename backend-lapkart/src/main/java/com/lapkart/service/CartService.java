@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -139,9 +140,14 @@ public class CartService {
             BigDecimal effectivePrice = (product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0)
                     ? product.getDiscountPrice()
                     : product.getPrice();
+            if (effectivePrice != null) {
+                effectivePrice = effectivePrice.setScale(0, RoundingMode.HALF_UP);
+            }
 
-            BigDecimal subtotal = effectivePrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-            totalAmount = totalAmount.add(subtotal);
+            BigDecimal subtotal = effectivePrice != null 
+                    ? effectivePrice.multiply(BigDecimal.valueOf(item.getQuantity())).setScale(0, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            totalAmount = totalAmount.add(subtotal).setScale(0, RoundingMode.HALF_UP);
             totalItems += item.getQuantity();
 
             String primaryImage = null;

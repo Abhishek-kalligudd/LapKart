@@ -63,21 +63,22 @@ public class CouponService {
         }
 
         if (coupon.getMinOrderAmount() != null && amount.compareTo(coupon.getMinOrderAmount()) < 0) {
+            BigDecimal minOrder = coupon.getMinOrderAmount().setScale(0, RoundingMode.HALF_UP);
             return CouponResponse.builder()
                     .valid(false)
                     .code(coupon.getCode())
-                    .message("Coupon requires a minimum order of ₹" + coupon.getMinOrderAmount())
+                    .message("Coupon requires a minimum order of ₹" + minOrder)
                     .build();
         }
 
         BigDecimal percent = BigDecimal.valueOf(coupon.getDiscountPercent()).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-        BigDecimal discount = amount.multiply(percent).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discount = amount.multiply(percent).setScale(0, RoundingMode.HALF_UP);
 
         if (coupon.getMaxDiscount() != null && discount.compareTo(coupon.getMaxDiscount()) > 0) {
-            discount = coupon.getMaxDiscount();
+            discount = coupon.getMaxDiscount().setScale(0, RoundingMode.HALF_UP);
         }
 
-        BigDecimal finalAmount = amount.subtract(discount);
+        BigDecimal finalAmount = amount.subtract(discount).setScale(0, RoundingMode.HALF_UP);
         if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
             finalAmount = BigDecimal.ZERO;
         }

@@ -16,6 +16,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { ProductGridSkeleton } from '../components/Skeleton';
+import { formatCurrency } from '../lib/utils';
 
 const brands = ['ALL', 'Apple', 'Dell', 'Asus', 'HP', 'Acer', 'Samsung', 'Gigabyte'];
 const categories = ['ALL', 'Gaming', 'Office Use', 'Chromebooks'];
@@ -274,11 +275,11 @@ export default function Products() {
                     <div className="flex flex-col">
                       {product.discountPrice && product.discountPrice < product.price ? (
                         <>
-                          <span className="text-lg font-bold text-primary">₹{product.discountPrice}</span>
-                          <span className="text-[11px] text-muted-foreground line-through">₹{product.price}</span>
+                          <span className="text-lg font-bold text-primary">{formatCurrency(product.discountPrice)}</span>
+                          <span className="text-[11px] text-muted-foreground line-through">{formatCurrency(product.price)}</span>
                         </>
                       ) : (
-                        <span className="text-lg font-bold">₹{product.price}</span>
+                        <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
                       )}
                     </div>
 

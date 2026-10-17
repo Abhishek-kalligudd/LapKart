@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,8 +55,11 @@ public class OrderService {
             BigDecimal effectivePrice = (product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0)
                     ? product.getDiscountPrice()
                     : product.getPrice();
+            if (effectivePrice != null) {
+                effectivePrice = effectivePrice.setScale(0, RoundingMode.HALF_UP);
+            }
 
-            totalAmount = totalAmount.add(effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+            totalAmount = totalAmount.add(effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()))).setScale(0, RoundingMode.HALF_UP);
         }
 
         // Generate unique order number
@@ -77,6 +81,9 @@ public class OrderService {
             BigDecimal effectivePrice = (product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0)
                     ? product.getDiscountPrice()
                     : product.getPrice();
+            if (effectivePrice != null) {
+                effectivePrice = effectivePrice.setScale(0, RoundingMode.HALF_UP);
+            }
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
@@ -215,7 +222,9 @@ public class OrderService {
                             .orElse(product.getProductImgs().get(0).getImageUrl());
                 }
 
-                BigDecimal subtotal = oi.getPriceLocked().multiply(BigDecimal.valueOf(oi.getQuantity()));
+                BigDecimal subtotal = oi.getPriceLocked() != null
+                        ? oi.getPriceLocked().multiply(BigDecimal.valueOf(oi.getQuantity())).setScale(0, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO;
 
                 itemDtos.add(OrderItemDto.builder()
                         .id(oi.getId())

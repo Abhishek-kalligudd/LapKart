@@ -20,6 +20,7 @@ import LookbackHero from '../components/LookbackHero';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
+import { formatCurrency } from '../lib/utils';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -173,7 +174,7 @@ export default function Home() {
                       </span>
                       {product.discountPrice && (
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 px-2 py-0.5 rounded-full">
-                          Save ₹{product.price - product.discountPrice}
+                          Save {formatCurrency(Math.round(product.price - product.discountPrice))}
                         </span>
                       )}
                     </div>
@@ -191,11 +192,11 @@ export default function Home() {
                     <div className="pt-3 border-t flex items-center justify-between">
                       <div>
                         <div className="text-lg font-black text-foreground">
-                          ₹{product.discountPrice || product.price}
+                          {formatCurrency(product.discountPrice || product.price)}
                         </div>
                         {product.discountPrice && (
                           <div className="text-xs text-muted-foreground line-through">
-                            ₹{product.price}
+                            {formatCurrency(product.price)}
                           </div>
                         )}
                       </div>

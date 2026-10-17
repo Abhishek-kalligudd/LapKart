@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Package, ArrowRight, Home, Calendar, MapPin, CreditCard } from 'lucide-react';
 import { api } from '../api/axios';
 import Loader from '../components/Loader';
+import { formatCurrency } from '../lib/utils';
 
 export default function OrderSuccess() {
   const { orderNumber } = useParams();
@@ -75,7 +76,7 @@ export default function OrderSuccess() {
 
                 <div className="flex justify-between pt-2 border-t font-semibold">
                   <span>Total Amount:</span>
-                  <span className="text-lg font-bold text-primary">₹{order.totalAmount}</span>
+                  <span className="text-lg font-bold text-primary">{formatCurrency(order.totalAmount)}</span>
                 </div>
               </div>
 
@@ -90,7 +91,7 @@ export default function OrderSuccess() {
                         <span className="font-medium truncate max-w-[280px]">
                           {item.name} × {item.quantity}
                         </span>
-                        <span className="font-semibold">₹{item.subtotal}</span>
+                        <span className="font-semibold">{formatCurrency(item.subtotal)}</span>
                       </div>
                     ))}
                   </div>

@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import { api } from '../api/axios';
 import Loader from '../components/Loader';
 import { useRazorpay } from '../hooks/useRazorpay';
+import { formatCurrency } from '../lib/utils';
 
 export default function Checkout() {
   const {
@@ -454,7 +455,7 @@ export default function Checkout() {
                     <h4 className="font-medium text-xs truncate">{item.name}</h4>
                     <span className="text-xs text-muted-foreground">Qty: {item.quantity}</span>
                   </div>
-                  <span className="font-semibold text-xs whitespace-nowrap">₹{item.subtotal}</span>
+                  <span className="font-semibold text-xs whitespace-nowrap">{formatCurrency(item.subtotal)}</span>
                 </div>
               ))}
             </div>
@@ -470,20 +471,20 @@ export default function Checkout() {
                   <div className="space-y-2.5 text-sm pt-3 border-t">
                     <div className="flex justify-between text-muted-foreground">
                       <span>Items Subtotal ({totalItems})</span>
-                      <span className="font-medium text-foreground">₹{totalAmount}</span>
+                      <span className="font-medium text-foreground">{formatCurrency(totalAmount)}</span>
                     </div>
 
                     {hasWarranty && (
                       <div className="flex justify-between text-emerald-600 font-medium">
                         <span>+2 Year LapCare Protection</span>
-                        <span>+₹{warrantyCost}</span>
+                        <span>+{formatCurrency(warrantyCost)}</span>
                       </div>
                     )}
 
                     {appliedCoupon && (
                       <div className="flex justify-between text-emerald-600 font-semibold">
                         <span>Coupon ({appliedCoupon.code})</span>
-                        <span>-₹{discountAmount}</span>
+                        <span>-{formatCurrency(discountAmount)}</span>
                       </div>
                     )}
 
@@ -500,7 +501,7 @@ export default function Checkout() {
 
                     <div className="pt-3 border-t flex justify-between items-baseline">
                       <span className="text-base font-bold text-foreground">Total Payable</span>
-                      <span className="text-2xl font-extrabold text-primary">₹{finalPayable}</span>
+                      <span className="text-2xl font-extrabold text-primary">{formatCurrency(finalPayable)}</span>
                     </div>
                   </div>
 
@@ -516,12 +517,12 @@ export default function Checkout() {
                     ) : paymentMethod === 'razorpay' ? (
                       <>
                         <Zap className="w-4 h-4" />
-                        <span>Pay ₹{finalPayable} via Razorpay</span>
+                        <span>Pay {formatCurrency(finalPayable)} via Razorpay</span>
                       </>
                     ) : (
                       <>
                         <Lock className="w-4 h-4" />
-                        <span>Confirm & Place Order (₹{finalPayable})</span>
+                        <span>Confirm & Place Order ({formatCurrency(finalPayable)})</span>
                       </>
                     )}
                   </motion.button>

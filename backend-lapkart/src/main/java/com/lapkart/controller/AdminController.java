@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.RoundingMode;
 import java.util.*;
 
 @RestController
@@ -56,8 +57,8 @@ public class AdminController {
                 ? req.getSku() 
                 : "LPK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         product.setDescription(req.getDescription() != null ? req.getDescription() : "");
-        product.setPrice(req.getPrice());
-        product.setDiscountPrice(req.getDiscountPrice());
+        product.setPrice(req.getPrice() != null ? req.getPrice().setScale(0, RoundingMode.HALF_UP) : null);
+        product.setDiscountPrice(req.getDiscountPrice() != null ? req.getDiscountPrice().setScale(0, RoundingMode.HALF_UP) : null);
         product.setStockQuantity(req.getStockQuantity() != null ? req.getStockQuantity() : 0);
         product.setProcessor(req.getProcessor());
         product.setRamGb(req.getRamGb());
@@ -104,8 +105,8 @@ public class AdminController {
             product.setSku(req.getSku());
         }
         product.setDescription(req.getDescription());
-        product.setPrice(req.getPrice());
-        product.setDiscountPrice(req.getDiscountPrice());
+        product.setPrice(req.getPrice() != null ? req.getPrice().setScale(0, RoundingMode.HALF_UP) : null);
+        product.setDiscountPrice(req.getDiscountPrice() != null ? req.getDiscountPrice().setScale(0, RoundingMode.HALF_UP) : null);
         product.setStockQuantity(req.getStockQuantity());
         product.setProcessor(req.getProcessor());
         product.setRamGb(req.getRamGb());

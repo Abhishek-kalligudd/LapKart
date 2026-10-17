@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useWishlistStore } from '../store/wishlistStore';
 import { useCartStore } from '../store/cartStore';
+import { formatCurrency } from '../lib/utils';
 
 export default function Wishlist() {
   const { items, loading, fetchWishlist, removeFromWishlist } = useWishlistStore();
@@ -127,11 +128,11 @@ export default function Wishlist() {
                   <div className="pt-3 border-t flex justify-between items-baseline mb-4">
                     <div>
                       <span className="text-base font-black text-foreground">
-                        ₹{product.discountPrice || product.price}
+                        {formatCurrency(product.discountPrice || product.price)}
                       </span>
                       {product.discountPrice && (
                         <span className="text-xs text-muted-foreground line-through ml-2">
-                          ₹{product.price}
+                          {formatCurrency(product.price)}
                         </span>
                       )}
                     </div>

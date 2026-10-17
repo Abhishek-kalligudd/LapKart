@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Package, Clock, Eye, CheckCircle2, AlertCircle, Search, Filter } from 'lucide-react';
 import { api } from '../../api/axios';
 import Loader from '../../components/Loader';
+import { formatCurrency } from '../../lib/utils';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -168,7 +169,7 @@ export default function AdminOrders() {
                       {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 font-bold text-foreground">
-                      ₹{order.totalAmount}
+                      {formatCurrency(order.totalAmount)}
                     </td>
                     <td className="px-6 py-4">
                       <select
@@ -268,9 +269,9 @@ export default function AdminOrders() {
                     <div className="flex-1">
                       <span className="text-[10px] font-bold text-primary uppercase">{item.brand}</span>
                       <h5 className="font-semibold text-xs">{item.name}</h5>
-                      <span className="text-xs text-muted-foreground">Qty: {item.quantity} × ₹{item.priceLocked}</span>
+                      <span className="text-xs text-muted-foreground">Qty: {item.quantity} × {formatCurrency(item.priceLocked)}</span>
                     </div>
-                    <span className="font-bold">₹{item.subtotal}</span>
+                    <span className="font-bold">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -318,7 +319,7 @@ export default function AdminOrders() {
 
             <div className="flex justify-between items-center pt-3 border-t">
               <span className="font-bold text-base">Grand Total:</span>
-              <span className="text-xl font-extrabold text-primary">₹{selectedOrder.totalAmount}</span>
+              <span className="text-xl font-extrabold text-primary">{formatCurrency(selectedOrder.totalAmount)}</span>
             </div>
           </div>
         </div>

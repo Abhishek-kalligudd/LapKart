@@ -28,7 +28,7 @@ export const useCartStore = create((set, get) => ({
         let totalAmount = 0;
         stored.forEach((item) => {
           totalItems += item.quantity;
-          totalAmount += (item.effectivePrice || item.price) * item.quantity;
+          totalAmount += Math.round((item.effectivePrice || item.price) * item.quantity);
         });
         set({
           items: stored,
@@ -69,15 +69,17 @@ export const useCartStore = create((set, get) => ({
       const stored = JSON.parse(localStorage.getItem(GUEST_CART_KEY) || '[]');
       const existingIdx = stored.findIndex((item) => item.productId === productId);
 
-      let effectivePrice = productInfo?.discountPrice && productInfo.discountPrice > 0
-        ? productInfo.discountPrice
-        : (productInfo?.price || 0);
+      let effectivePrice = Math.round(
+        productInfo?.discountPrice && productInfo.discountPrice > 0
+          ? productInfo.discountPrice
+          : (productInfo?.price || 0)
+      );
 
       let primaryImg = productInfo?.productImgs?.[0]?.imageUrl || '';
 
       if (existingIdx > -1) {
         stored[existingIdx].quantity += quantity;
-        stored[existingIdx].subtotal = stored[existingIdx].quantity * stored[existingIdx].effectivePrice;
+        stored[existingIdx].subtotal = Math.round(stored[existingIdx].quantity * stored[existingIdx].effectivePrice);
       } else {
         stored.push({
           id: 'guest_' + productId + '_' + Date.now(),
@@ -91,7 +93,7 @@ export const useCartStore = create((set, get) => ({
           quantity: quantity,
           stockQuantity: productInfo?.stockQuantity || 10,
           imageUrl: primaryImg,
-          subtotal: effectivePrice * quantity,
+          subtotal: Math.round(effectivePrice * quantity),
         });
       }
 
@@ -101,7 +103,7 @@ export const useCartStore = create((set, get) => ({
       let totalAmount = 0;
       stored.forEach((item) => {
         totalItems += item.quantity;
-        totalAmount += item.effectivePrice * item.quantity;
+        totalAmount += Math.round(item.effectivePrice * item.quantity);
       });
 
       set({
@@ -159,7 +161,7 @@ export const useCartStore = create((set, get) => ({
             return {
               ...i,
               quantity,
-              subtotal: quantity * i.effectivePrice
+              subtotal: Math.round(quantity * i.effectivePrice)
             };
           }
           return i;
@@ -171,7 +173,7 @@ export const useCartStore = create((set, get) => ({
       let totalAmount = 0;
       updated.forEach((item) => {
         totalItems += item.quantity;
-        totalAmount += item.effectivePrice * item.quantity;
+        totalAmount += Math.round(item.effectivePrice * item.quantity);
       });
 
       set({ items: updated, totalItems, totalAmount });
@@ -215,7 +217,7 @@ export const useCartStore = create((set, get) => ({
       let totalAmount = 0;
       updated.forEach((item) => {
         totalItems += item.quantity;
-        totalAmount += item.effectivePrice * item.quantity;
+        totalAmount += Math.round(item.effectivePrice * item.quantity);
       });
 
       set({ items: updated, totalItems, totalAmount });
